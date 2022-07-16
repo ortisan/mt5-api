@@ -1,33 +1,20 @@
-from fastapi import FastAPI
-from models import Order
+from datetime import datetime
 import MetaTrader5 as mt5
-from settings import Settings
-from enum import Enum
-from typing import List
-from pydantic import BaseModel
+import pandas as pd
+from fastapi import FastAPI
 from loguru import logger
 
-logger.add("mt5-api.log", rotation="100 MB", enqueue=True,  serialize=True)
+from models import Order, SymbolType, TimeframeEnum, symbols_type_filter
+from settings import Settings
+
+logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)
 
 app = FastAPI()
 settings = Settings()
 
-class SymbolType(str, Enum):
-    VISTA = "VISTA"
-    FRACTION = "FRACTION"
-    OPTION = "OPTION"
-    INDEX = "INDEX"
-
-symbols_type_filter = {
-    SymbolType.VISTA: "BOVESPA\\A VISTA",
-    SymbolType.FRACTION: "BOVESPA\\FRACIONARIO",
-    SymbolType.OPTION: "BOVESPA\\OPCOES",
-    SymbolType.INDEX: "BOVESPA\\INDICES",
-}
-
-class SymbolTypeModel(BaseModel):
-    types: List[SymbolType]
-
+# establish connection to the MetaTrader 5 terminal
+logger.info("Starting MT5 terminal...")
+initialized = mt5.initialize()
 # initialized = mt5.initialize(
 #     settings.mt5_path,
 #     login=settings.mt5_login,
@@ -36,12 +23,12 @@ class SymbolTypeModel(BaseModel):
 #     timeout=settings.mt5_timeout,
 #     portable=False
 # )
-
-initialized = mt5.initialize()
-
-# establish connection to the MetaTrader 5 terminal
 if not initialized:
-    logger.error(f"MT5 initialization failed: {mt5.last_error()}")
+    error_msg = f"MT5 initialization failed: {mt5.last_error()}"
+    logger.error(error_msg)
+    raise Exception(error_msg)
+
+logger.info("Terminal initialized...")
 
 
 @app.get("/symbols")
@@ -60,7 +47,7 @@ async def get_all_symbols_paths():
 
 @app.get("/symbols/{symbol}")
 async def get_symbol(symbol: str):
-    symbol_info=mt5.symbol_info(symbol)
+    symbol_info = mt5.symbol_info(symbol)
     return {
         "name": symbol_info.name,
         "point": symbol_info.point,
@@ -69,37 +56,27 @@ async def get_symbol(symbol: str):
 
 
 @app.get("/orders")
-async def get_orders():
-    return mt5.orders_get()
+async def get_orders(symbol: str = None):
+    return mt5.orders_get(symbol=symbol)
 
 
 @app.post("/orders")
 async def post_order(order: Order):
-    mt5.order_send()
-    request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": symbol,
-        "volume": lot,
-        "type": mt5.ORDER_TYPE_BUY,
-        "price": price,
-        "sl": price - 100 * point,
-        "tp": price + 100 * point,
-        "deviation": deviation,
-        "magic": 234000,
-        "comment": "python script open",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_RETURN,
-    }
-
-
-    return [order]
+    request_order_mt5 = order.to_mt5_order()
+    return mt5.order_send(request_order_mt5)
 
 
 @app.get("/positions")
-async def get_positions():
-    return []
-
+async def get_positions(symbol: str = None):
+    return mt5.positions_get(symbol)
 
 @app.get("/prices")
-async def get_prices():
-    return []
+async def get_prices(symbol: str, timeframe: TimeframeEnum, initial_date: datetime, final_date: datetime):
+    try:
+        rates = mt5.copy_rates_range(symbol, timeframe.to_mt5(), initial_date, final_date)
+        rates_df = pd.DataFrame(rates)
+        rates_df["date"] = pd.to_datetime(rates_df["time"], unit="s")
+        rates_df = rates_df.set_index("time")
+        return rates_df.to_dict(orient='index')
+    except Exception as exc:
+        logger.exception(exc)
