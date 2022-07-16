@@ -12,7 +12,7 @@ logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)
 app = FastAPI()
 settings = Settings()
 
-# establish connection to the MetaTrader 5 terminal
+# Establish connection to the MetaTrader 5 terminal
 logger.info("Starting MT5 terminal...")
 initialized = mt5.initialize()
 # initialized = mt5.initialize(
@@ -27,7 +27,6 @@ if not initialized:
     error_msg = f"MT5 initialization failed: {mt5.last_error()}"
     logger.error(error_msg)
     raise Exception(error_msg)
-
 logger.info("Terminal initialized...")
 
 
@@ -57,7 +56,7 @@ async def get_symbol(symbol: str):
 
 @app.get("/orders")
 async def get_orders(symbol: str = None):
-    return mt5.orders_get(symbol=symbol)
+    return mt5.orders_get(symbol)
 
 
 @app.post("/orders")
