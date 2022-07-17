@@ -2,8 +2,13 @@ from unittest.mock import MagicMock
 
 import MetaTrader5 as mt5
 
-from mt5_api.models import (Order, OrderType, SymbolType, TimeframeEnum,
-                            _symbols_type_filter)
+from mt5_api.models import (
+    Order,
+    OrderType,
+    SymbolType,
+    TimeframeEnum,
+    _symbols_type_filter,
+)
 
 
 def test_timeframe():

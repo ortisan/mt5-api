@@ -50,17 +50,12 @@ async def get_symbol(symbol: str):
     symbol_info = mt5.symbol_info(symbol)
     symbol_tick_info = mt5.symbol_info_tick(symbol)
     if not symbol_tick_info:
-        logger.error(f"Error to obtain bid price of {symbol}: {mt5.last_error()}")
-
-    symbol_info_tick_dict = symbol_tick_info._asdict()
-    for prop in symbol_info_tick_dict:
-        print("  {}={}".format(prop, symbol_info_tick_dict[prop]))
- 
+        logger.error(f"Error to get bid/ask price of {symbol}: {mt5.last_error()}")
 
     return {
         "symbol": symbol_info.name,
         "point": symbol_info.point,
-        "price": symbol_tick_info.ask,
+        "price": symbol_tick_info.ask if symbol_tick_info else 0.0,
     }
 
 

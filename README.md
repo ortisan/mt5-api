@@ -14,17 +14,15 @@ API HTTP Wrapper to Metatrader5 python apis.
 poetry add <dependency name>
 # Activate Env
 poetry shell
-# Organize imports
-poetry run isort .
-# Autoformat
-poetry run black .
+# Organize imports and format code
+poetry run isort . && poetry run black .
 # Test
 poetry run coverage run -m pytest && poetry run coverage report -m
 # Start app
 uvicorn main:app --reload
 ```
 
-### Apis
+### APIs
 
 ![OpenAPI](/images/openapi.png "OpenAPI")
 
