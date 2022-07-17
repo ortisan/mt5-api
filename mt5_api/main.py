@@ -5,8 +5,8 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from loguru import logger
 
-from models import Order, SymbolType, TimeframeEnum, symbols_type_filter
-from settings import Settings
+from .models import Order, SymbolType, TimeframeEnum
+from .settings import Settings
 
 logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)
 
@@ -32,8 +32,8 @@ logger.info("Terminal initialized...")
 
 
 @app.get("/symbols")
-async def get_all_symbols(type: SymbolType = SymbolType.VISTA):
-    symbol_type_filter = symbols_type_filter[type]
+async def get_all_symbols(symbol_type: SymbolType = SymbolType.VISTA):
+    symbol_type_filter = symbol_type.get_filter()
     all_symbols = mt5.symbols_get()
     return [s.name for s in all_symbols if symbol_type_filter in s.path]
 
@@ -48,10 +48,19 @@ async def get_all_symbols_paths():
 @app.get("/symbols/{symbol}")
 async def get_symbol(symbol: str):
     symbol_info = mt5.symbol_info(symbol)
+    symbol_tick_info = mt5.symbol_info_tick(symbol)
+    if not symbol_tick_info:
+        logger.error(f"Error to obtain bid price of {symbol}: {mt5.last_error()}")
+
+    symbol_info_tick_dict = symbol_tick_info._asdict()
+    for prop in symbol_info_tick_dict:
+        print("  {}={}".format(prop, symbol_info_tick_dict[prop]))
+ 
+
     return {
-        "name": symbol_info.name,
+        "symbol": symbol_info.name,
         "point": symbol_info.point,
-        "price": symbol_info.ask,
+        "price": symbol_tick_info.ask,
     }
 
 

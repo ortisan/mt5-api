@@ -18,6 +18,8 @@ poetry shell
 poetry run isort .
 # Autoformat
 poetry run black .
+# Test
+poetry run coverage run -m pytest && poetry run coverage report -m
 # Start app
 uvicorn main:app --reload
 ```

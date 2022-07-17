@@ -28,7 +28,7 @@ class TimeframeEnum(str, Enum):
     TIMEFRAME_W1 = "TIMEFRAME_W1"
     TIMEFRAME_MN1 = "TIMEFRAME_MN1"
 
-    def to_mt5(self):
+    def to_mt5(self) -> int:
         return getattr(mt5, self)
 
 
@@ -38,9 +38,16 @@ class SymbolType(str, Enum):
     OPTION = "OPTION"
     INDEX = "INDEX"
 
+    def get_filter(self) -> str:
+        return _symbols_type_filter[self]
 
-class SymbolTypeModel(BaseModel):
-    types: List[SymbolType]
+
+_symbols_type_filter = {
+    SymbolType.VISTA: "BOVESPA\\A VISTA",
+    SymbolType.FRACTION: "BOVESPA\\FRACIONARIO",
+    SymbolType.OPTION: "BOVESPA\\OPCOES",
+    SymbolType.INDEX: "BOVESPA\\INDICES",
+}
 
 
 class OrderType(str, Enum):
@@ -54,7 +61,7 @@ class Order(BaseModel):
     volume: float
     comment: Union[str, None] = None
 
-    def to_mt5_order(self):
+    def to_mt5_order(self) -> dict:
         price = mt5.symbol_info_tick(self.symbol).ask
         point = mt5.symbol_info(self.symbol).point
         sl = price - 100 * point
@@ -64,10 +71,10 @@ class Order(BaseModel):
             "symbol": self.symbol,
             "action": mt5.TRADE_ACTION_DEAL,
             "volume": self.volume,
-            price: price,
-            sl: sl,
-            tp: tp,
-            deviation: deviation,
+            "price": price,
+            "sl": sl,
+            "tp": tp,
+            "deviation": deviation,
         }
         order_type = None
         if self.type == OrderType.Buy:
@@ -76,15 +83,3 @@ class Order(BaseModel):
             order_type = mt5.ORDER_TYPE_SELL
         mt5_order_request["type"] = order_type
         return mt5_order_request
-
-
-class SymbolTypeModel(BaseModel):
-    types: List[SymbolType]
-
-
-symbols_type_filter = {
-    SymbolType.VISTA: "BOVESPA\\A VISTA",
-    SymbolType.FRACTION: "BOVESPA\\FRACIONARIO",
-    SymbolType.OPTION: "BOVESPA\\OPCOES",
-    SymbolType.INDEX: "BOVESPA\\INDICES",
-}
