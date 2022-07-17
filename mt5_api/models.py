@@ -52,13 +52,23 @@ class Order(BaseModel):
     type: OrderType
     symbol: str
     volume: float
-    price: float
-    stoplimit: float
-    price: float
     comment: Union[str, None] = None
 
     def to_mt5_order(self):
-        mt5_order_request = {"symbol": self.symbol, "action": mt5.TRADE_ACTION_DEAL, "volume": self.volume}
+        price = mt5.symbol_info_tick(self.symbol).ask
+        point = mt5.symbol_info(self.symbol).point
+        sl = price - 100 * point
+        tp = price + 100 * point
+        deviation = 20
+        mt5_order_request = {
+            "symbol": self.symbol,
+            "action": mt5.TRADE_ACTION_DEAL,
+            "volume": self.volume,
+            price: price,
+            sl: sl,
+            tp: tp,
+            deviation: deviation,
+        }
         order_type = None
         if self.type == OrderType.Buy:
             order_type = mt5.ORDER_TYPE_BUY

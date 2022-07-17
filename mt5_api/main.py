@@ -1,7 +1,8 @@
 from datetime import datetime
+
 import MetaTrader5 as mt5
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from loguru import logger
 
 from models import Order, SymbolType, TimeframeEnum, symbols_type_filter
@@ -50,7 +51,7 @@ async def get_symbol(symbol: str):
     return {
         "name": symbol_info.name,
         "point": symbol_info.point,
-        "price": symbol_info.ask
+        "price": symbol_info.ask,
     }
 
 
@@ -61,21 +62,37 @@ async def get_orders(symbol: str = None):
 
 @app.post("/orders")
 async def post_order(order: Order):
-    request_order_mt5 = order.to_mt5_order()
-    return mt5.order_send(request_order_mt5)
+    try:
+        request_order_mt5 = order.to_mt5_order()
+        result = mt5.order_send(request_order_mt5)
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            raise HTTPException(
+                status_code=400, detail=f"Error to send order: {result.retcode}"
+            )
+        result_dict = result._asdict()
+        return result_dict
+    except HTTPException as exc:
+        raise exc
+    except Exception as exc:
+        logger.exception(exc)
 
 
 @app.get("/positions")
 async def get_positions(symbol: str = None):
     return mt5.positions_get(symbol)
 
+
 @app.get("/prices")
-async def get_prices(symbol: str, timeframe: TimeframeEnum, initial_date: datetime, final_date: datetime):
+async def get_prices(
+    symbol: str, timeframe: TimeframeEnum, initial_date: datetime, final_date: datetime
+):
     try:
-        rates = mt5.copy_rates_range(symbol, timeframe.to_mt5(), initial_date, final_date)
+        rates = mt5.copy_rates_range(
+            symbol, timeframe.to_mt5(), initial_date, final_date
+        )
         rates_df = pd.DataFrame(rates)
         rates_df["date"] = pd.to_datetime(rates_df["time"], unit="s")
         rates_df = rates_df.set_index("time")
-        return rates_df.to_dict(orient='index')
+        return rates_df.to_dict(orient="index")
     except Exception as exc:
         logger.exception(exc)
