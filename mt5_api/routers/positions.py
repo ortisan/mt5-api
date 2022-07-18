@@ -3,7 +3,6 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
-from loguru import logger
 
 
 @router.get("/positions", tags=["positions"])

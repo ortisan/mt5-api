@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from mt5_api.models import SymbolType
 
@@ -24,6 +24,9 @@ async def get_all_symbols_paths():
 @router.get("/symbols/{symbol}", tags=["symbols"])
 async def get_symbol(symbol: str):
     symbol_info = mt5.symbol_info(symbol)
+    if not symbol_info:
+        raise HTTPException(status_code=404, detail=f"Orders not found.")
+
     symbol_tick_info = mt5.symbol_info_tick(symbol)
     if not symbol_tick_info:
         logger.error(f"Error to get bid/ask price of {symbol}: {mt5.last_error()}")

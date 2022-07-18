@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 import MetaTrader5 as mt5
 
 from mt5_api.models import (
@@ -41,11 +39,15 @@ def test_symbol_type():
     assert SymbolType.INDEX.get_filter() == _symbols_type_filter[SymbolType.INDEX]
 
 
-def test_order():
-    mt5.symbol_info_tick = MagicMock(return_value=type("obj", (), {"ask": 100.0}))
-    mt5.symbol_info = MagicMock(return_value=type("obj", (), {"point": 0.1}))
+def test_order(mocker):
+    mocker.patch.object(
+        mt5, "symbol_info_tick", return_value=type("obj", (), {"ask": 100.0})
+    )
+    mocker.patch.object(
+        mt5, "symbol_info", return_value=type("obj", (), {"point": 0.1})
+    )
 
-    buy_order = Order(type=OrderType.Buy, symbol="PETR4", volume=100, comment="Testing")
+    buy_order = Order(type=OrderType.Buy, symbol="PETR3", volume=100, comment="Testing")
     request_mt5 = buy_order.to_mt5_order()
 
     assert request_mt5["type"] == mt5.ORDER_TYPE_BUY
@@ -58,7 +60,7 @@ def test_order():
     assert request_mt5["deviation"] == 20
 
     sell_order = Order(
-        type=OrderType.Sell, symbol="PETR4", volume=100, comment="Testing"
+        type=OrderType.Sell, symbol="PETR3", volume=100, comment="Testing"
     )
     request_mt5 = sell_order.to_mt5_order()
 

@@ -3,8 +3,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import ValidationError
-from routers import orders, positions, prices, symbols
 
+from mt5_api.routers import orders, positions, prices, symbols
 from mt5_api.settings import Settings
 
 logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)

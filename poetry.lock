@@ -273,6 +273,19 @@ python-versions = ">=3.5, <4"
 numpy = ">=1.7"
 
 [[package]]
+name = "mock"
+version = "4.0.3"
+description = "Rolling backport of unittest.mock for all Pythons"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+build = ["twine", "wheel", "blurb"]
+docs = ["sphinx"]
+test = ["pytest (<5.4)", "pytest-cov"]
+
+[[package]]
 name = "more-itertools"
 version = "8.13.0"
 description = "More routines for operating on iterables, beyond itertools"
@@ -649,7 +662,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "2c7e173f336b3d37979c4b244703a6dd2fb83109c9f1a096c6566e520a3b921a"
+content-hash = "0af10fafd096c419b4db3006ebf008d380278a03bd7b422b00302bae1717ed2f"
 
 [metadata.files]
 anyio = [
@@ -844,6 +857,10 @@ metatrader5 = [
     {file = "MetaTrader5-5.0.37-cp38-cp38-win_amd64.whl", hash = "sha256:7e5ed2aff6407e2f9321f96931c322309103f27cae5fb82a58db97b84138a693"},
     {file = "MetaTrader5-5.0.37-cp39-cp39-win32.whl", hash = "sha256:a224a12d733505d1bd9e9193410d641b8ff3a66594020da14b6a94e79e815329"},
     {file = "MetaTrader5-5.0.37-cp39-cp39-win_amd64.whl", hash = "sha256:b3bd0d9608f417f19f0e2b01c29abf05cffb153dbaa63972943a72b98e6ce51c"},
+]
+mock = [
+    {file = "mock-4.0.3-py3-none-any.whl", hash = "sha256:122fcb64ee37cfad5b3f48d7a7d51875d7031aaf3d8be7c42e2bee25044eee62"},
+    {file = "mock-4.0.3.tar.gz", hash = "sha256:7d3fbbde18228f4ff2f1f119a45cdffa458b4c0dee32eb4d2bb2f82554bac7bc"},
 ]
 more-itertools = [
     {file = "more-itertools-8.13.0.tar.gz", hash = "sha256:a42901a0a5b169d925f6f217cd5a190e32ef54360905b9c39ee7db5313bfec0f"},
