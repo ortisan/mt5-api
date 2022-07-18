@@ -1,8 +1,9 @@
+from datetime import datetime
 from enum import Enum
-from typing import List, Union
+from typing import Union
 
 import MetaTrader5 as mt5
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TimeframeEnum(str, Enum):
@@ -58,7 +59,7 @@ class OrderType(str, Enum):
 class Order(BaseModel):
     type: OrderType
     symbol: str
-    volume: float
+    volume: float = Field(gt=0, description="The volume must be greater than zero")
     comment: Union[str, None] = None
 
     def to_mt5_order(self) -> dict:
@@ -75,6 +76,9 @@ class Order(BaseModel):
             "sl": sl,
             "tp": tp,
             "deviation": deviation,
+            "comment": self.comment
+            if self.comment
+            else f"Negotiation of {self.symbol} at {datetime.utcnow()}",
         }
         order_type = None
         if self.type == OrderType.Buy:

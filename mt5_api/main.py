@@ -1,16 +1,20 @@
-from datetime import datetime
-
 import MetaTrader5 as mt5
-import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from loguru import logger
+from pydantic import ValidationError
+from routers import orders, positions, prices, symbols
 
-from .models import Order, SymbolType, TimeframeEnum
-from .settings import Settings
+from mt5_api.settings import Settings
 
 logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)
 
 app = FastAPI()
+app.include_router(symbols.router)
+app.include_router(orders.router)
+app.include_router(positions.router)
+app.include_router(prices.router)
+
 settings = Settings()
 
 # Establish connection to the MetaTrader 5 terminal
@@ -31,72 +35,28 @@ if not initialized:
 logger.info("Terminal initialized...")
 
 
-@app.get("/symbols")
-async def get_all_symbols(symbol_type: SymbolType = SymbolType.VISTA):
-    symbol_type_filter = symbol_type.get_filter()
-    all_symbols = mt5.symbols_get()
-    return [s.name for s in all_symbols if symbol_type_filter in s.path]
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    logger.error(exc)
+    return JSONResponse(
+        status_code=400,
+        content=exc.json(),
+    )
 
 
-@app.get("/symbols_paths")
-async def get_all_symbols_paths():
-    all_symbols = mt5.symbols_get()
-    paths = {"\\".join(s.path.split("\\")[:-1]) for s in all_symbols}
-    return paths
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(exc)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail},
+    )
 
 
-@app.get("/symbols/{symbol}")
-async def get_symbol(symbol: str):
-    symbol_info = mt5.symbol_info(symbol)
-    symbol_tick_info = mt5.symbol_info_tick(symbol)
-    if not symbol_tick_info:
-        logger.error(f"Error to get bid/ask price of {symbol}: {mt5.last_error()}")
-
-    return {
-        "symbol": symbol_info.name,
-        "point": symbol_info.point,
-        "price": symbol_tick_info.ask if symbol_tick_info else 0.0,
-    }
-
-
-@app.get("/orders")
-async def get_orders(symbol: str = None):
-    return mt5.orders_get(symbol)
-
-
-@app.post("/orders")
-async def post_order(order: Order):
-    try:
-        request_order_mt5 = order.to_mt5_order()
-        result = mt5.order_send(request_order_mt5)
-        if result.retcode != mt5.TRADE_RETCODE_DONE:
-            raise HTTPException(
-                status_code=400, detail=f"Error to send order: {result.retcode}"
-            )
-        result_dict = result._asdict()
-        return result_dict
-    except HTTPException as exc:
-        raise exc
-    except Exception as exc:
-        logger.exception(exc)
-
-
-@app.get("/positions")
-async def get_positions(symbol: str = None):
-    return mt5.positions_get(symbol)
-
-
-@app.get("/prices")
-async def get_prices(
-    symbol: str, timeframe: TimeframeEnum, initial_date: datetime, final_date: datetime
-):
-    try:
-        rates = mt5.copy_rates_range(
-            symbol, timeframe.to_mt5(), initial_date, final_date
-        )
-        rates_df = pd.DataFrame(rates)
-        rates_df["date"] = pd.to_datetime(rates_df["time"], unit="s")
-        rates_df = rates_df.set_index("time")
-        return rates_df.to_dict(orient="index")
-    except Exception as exc:
-        logger.exception(exc)
+@app.exception_handler(Exception)
+async def default_exception_handler(request: Request, exc: Exception):
+    logger.exception(exc)
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(exc)},
+    )

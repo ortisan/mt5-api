@@ -16,6 +16,8 @@ poetry add <dependency name>
 poetry shell
 # Organize imports and format code
 poetry run isort . && poetry run black .
+# Remove Unused Imports and Vars
+poetry run autoflake --in-place --remove-all-unused-imports --remove-unused-variables .
 # Test
 poetry run coverage run -m pytest && poetry run coverage report -m
 # Start app
