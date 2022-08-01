@@ -2,6 +2,10 @@
 
 API HTTP Wrapper to Metatrader5 python apis.
 
+Usage Examples:
+
+- [Mini-Index Studies](https://github.com/ortisan/ortisan_ta/blob/master/notebooks/Analysis.ipynb)
+
 ## Pre reqs
 
 1. Install [Metatrader 5](https://www.metatrader5.com/en/download)
