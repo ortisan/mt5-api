@@ -9,7 +9,7 @@ Usage Examples:
 ## Pre reqs
 
 1. Install [Metatrader 5](https://www.metatrader5.com/en/download)
-2. Get MT5 licence from your investment account. Eg. [Rico](https://www.rico.com.vc/) 
+2. Get MT5 licence from your investment account. Eg. [Rico](https://www.rico.com.vc/)
 
 ### Commands
 
@@ -18,12 +18,14 @@ Usage Examples:
 poetry add <dependency name>
 # Activate Env
 poetry shell
+# Install app and dependencies
+poetry install
 # Organize imports and format code
 poetry run autoflake --expand-star-imports --remove-all-unused-imports --remove-duplicate-keys --remove-unused-variables --recursive --in-place .  && poetry run isort . && poetry run black .
 # Test
 poetry run coverage run -m pytest && poetry run coverage report -m
 # Start app
-uvicorn main:app --reload
+uvicorn main:app --host 0.0.0.0 --reload
 ```
 
 ### APIs

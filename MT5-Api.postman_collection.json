@@ -1,0 +1,71 @@
+{
+	"info": {
+		"_postman_id": "a9029b85-c282-4a0b-8a5f-a36142322bfe",
+		"name": "MT5 Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Symbols",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/symbols?type=VISTA",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"symbols"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "VISTA"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Prices",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/prices?symbol=PETR3&timeframe=TIMEFRAME_M1&initial_date=2022-06-16T14:30:00.000Z&final_date=2022-07-16T14:30:00.000Z",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"prices"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "PETR3"
+						},
+						{
+							"key": "timeframe",
+							"value": "TIMEFRAME_M1"
+						},
+						{
+							"key": "initial_date",
+							"value": "2022-06-16T14:30:00.000Z"
+						},
+						{
+							"key": "final_date",
+							"value": "2022-07-16T14:30:00.000Z"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
