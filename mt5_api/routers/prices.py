@@ -15,6 +15,6 @@ async def get_prices(
 ):
     rates = mt5.copy_rates_range(symbol, timeframe.to_mt5(), initial_date, final_date)
     rates_df = pd.DataFrame(rates)
-    rates_df["date"] = pd.to_datetime(rates_df["time"], unit="s")
-    rates_df = rates_df.set_index("time")
-    return rates_df.to_dict(orient="index")
+    rates_df.rename(columns={"time": "timestamp"}, inplace=True)
+    rates_df["datetime"] = pd.to_datetime(rates_df["timestamp"], unit="s")
+    return rates_df.to_dict(orient="records")
