@@ -4,10 +4,8 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from pydantic import ValidationError
 
-from mt5_api.routers import orders, positions, prices, symbols
+from mt5_api.routes import orders, positions, prices, symbols
 from mt5_api.settings import Settings
-
-logger.add("mt5-api.log", rotation="100 MB", enqueue=True, serialize=True)
 
 app = FastAPI()
 app.include_router(symbols.router)
@@ -39,7 +37,7 @@ logger.info("Terminal initialized...")
 async def validation_exception_handler(request: Request, exc: ValidationError):
     logger.error(exc)
     return JSONResponse(
-        status_code=400,
+        status_code=422,
         content=exc.json(),
     )
 

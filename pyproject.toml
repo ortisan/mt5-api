@@ -5,12 +5,12 @@ description = "API wrapper for Metatrader 5"
 authors = ["Marcelo Ortiz de Santana <tentativafc@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-fastapi = "^0.79.0"
-uvicorn = "^0.18.2"
-pydantic = "^1.9.1"
+python = ">=3.9,<4.0"
+fastapi = "^0.103.0"
+uvicorn = "^0.23.2"
+pydantic = "^2.4.2"
 MetaTrader5 = "^5.0.37"
-loguru = "^0.6.0"
+loguru = "^0.7.2"
 pandas = "^1.4.3"
 
 [tool.poetry.dev-dependencies]

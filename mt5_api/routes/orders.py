@@ -20,7 +20,7 @@ async def post_order(order: Order):
     result = mt5.order_send(request_order_mt5)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         raise HTTPException(
-            status_code=400, detail=f"Error to send order: {result.retcode}"
+            status_code=422, detail=f"Error to send order: {result.retcode}"
         )
     result_dict = result._asdict()
     return result_dict
